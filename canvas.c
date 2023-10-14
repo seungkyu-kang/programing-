@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <Windows.h>
 #include "jjuggumi.h"
 #include "canvas.h"
 
@@ -33,10 +30,10 @@ void map_init(int n_row, int n_col) {
 	N_COL = n_col;
 	for (int i = 0; i < N_ROW; i++) {
 		// 대입문 이렇게 쓸 수 있는데 일부러 안 가르쳐줬음
-		back_buf[i][0] = back_buf[i][N_COL - 1] = '#';
+		back_buf[i][0] = back_buf[i][N_COL - 1] = '*';
 
 		for (int j = 1; j < N_COL - 1; j++) {
-			back_buf[i][j] = (i == 0 || i == N_ROW - 1) ? '#' : ' ';
+			back_buf[i][j] = (i == 0 || i == N_ROW - 1) ? '*' : ' ';
 		}
 	}
 }
@@ -54,6 +51,7 @@ bool placable(int row, int col) {
 // 상단에 맵을, 하단에는 현재 상태를 출력
 void display(void) {
 	draw();
+
 	gotoxy(N_ROW + 4, 0);  // 추가로 표시할 정보가 있으면 맵과 상태창 사이의 빈 공간에 출력
 	print_status();
 }
@@ -77,37 +75,5 @@ void print_status(void) {
 }
 
 void dialog(char message[]) {
-	int remaining_time = DIALOG_DURATION_SEC;
 
-	// 현재 화면 저장
-	char saved_front_buf[ROW_MAX][COL_MAX];
-	for (int row = 0; row < N_ROW; row++) {
-		for (int col = 0; col < N_COL; col++) {
-			saved_front_buf[row][col] = front_buf[row][col];
-		}
-	}
-
-	while (remaining_time >= 0) {
-		system("cls");  // 화면을 지우고 새로 그리기 (Windows 환경)
-
-		// 메시지 출력
-		printf("Message: %s\n", message);
-		// 남은 시간 출력
-		printf("Remaining Time: %d seconds\n", remaining_time);
-
-		// 1초 대기 (1000 밀리초)
-		Sleep(1000);
-
-		remaining_time--;
-	}
-
-	// 이전 화면 복구
-	for (int row = 0; row < N_ROW; row++) {
-		for (int col = 0; col < N_COL; col++) {
-			front_buf[row][col] = saved_front_buf[row][col];
-		}
-	}
-
-	// 화면 그리기
-	display();
 }
