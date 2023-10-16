@@ -75,5 +75,32 @@ void print_status(void) {
 }
 
 void dialog(char message[]) {
+	int remaining_time = DIALOG_DURATION_SEC;
+	while (remaining_time >= 0) {
+		// 현재 맵과 상태를 백업
+		char backup[20][10];
+		for (int row = 0; row < N_ROW; row++) {
+			for (int col = 0; col < N_COL; col++) {
+				backup[row][col] = back_buf[row][col];
+			}
+		}
 
+		// 남은 시간과 메시지 출력
+		gotoxy(N_ROW / 2, N_COL / 2 - strlen(message) / 2);
+		printf("Remaining time: %d seconds", remaining_time);
+		gotoxy(N_ROW / 2 + 1, N_COL / 2 - strlen(message) / 2);
+		printf("%s", message);
+
+		// 1초 대기
+		Sleep(1000);
+		remaining_time--;
+
+		// 복구
+		for (int row = 0; row < N_ROW; row++) {
+			for (int col = 0; col < N_COL; col++) {
+				back_buf[row][col] = backup[row][col];
+			}
+		}
+		display();
+	}
 }
