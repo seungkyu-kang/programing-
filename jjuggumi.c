@@ -37,8 +37,13 @@ void intro(void) {
 
 
 	// 게임 시작을 위한 대기 시간 (5초)
-	printf("\n게임을 시작합니다...\n");
-	Sleep(4800); //  (5초) 대기
+	printf("\n로딩중");
+	for (int i = 0; i < 5; i++) {
+		printf("#########");
+		Sleep(1000);
+	}
+	printf("\n");
+	//Sleep(4800); //  (5초) 대기
 
 	// 콘솔 화면을 지우는 명령 (Windows 환경)
 	system("cls");
@@ -57,14 +62,18 @@ void ending(void) {
 			}
 		}
 	}
-
 	if (winner == -1) {
+		gotoxy(5, 6);
 		printf("우승자를 가리지 못했습니다!\n");
 	}
 	else {
+		gotoxy(5, 6);
 		printf("플레이어 %d가 이겼습니다!\n", winner);
 	}
 
+	for (int i = 0; i < 20; i++) {
+		printf("\n");
+	}
 	// 게임 종료 로직 추가
 	// 이후 게임을 종료하거나 다시 시작할 수 있도록 필요한 코드를 여기에 추가
 }
@@ -73,8 +82,9 @@ int main(void) {
 
 	jjuggumi_init();
 	intro();
-	//sample();
-	mugunghwa();
+	sample();
+	dialog("s");
+	//mugunghwa();
 	//nightgame();
 	//juldarigi();
 	ending();
