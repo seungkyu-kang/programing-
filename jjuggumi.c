@@ -27,6 +27,7 @@ int jjuggumi_init(void) {
 	}
 	return 0;
 }
+
 void intro(void) {
 	// "GOOD LUCK"을 나타내는 ASCII 아트 출력
 	printf("  ____  ___   ___  ____    _    _   _  ____ _  __\n");
@@ -48,6 +49,7 @@ void intro(void) {
 	// 콘솔 화면을 지우는 명령 (Windows 환경)
 	system("cls");
 }
+
 void ending(void) {
 	int winner = -1; // 우승자의 인덱스, 초기에는 무승부(-1)로 설정
 
@@ -83,8 +85,7 @@ int main(void) {
 	jjuggumi_init();
 	intro();
 	sample();
-	dialog("s");
-	//mugunghwa();
+	mugunghwa();
 	//nightgame();
 	//juldarigi();
 	ending();

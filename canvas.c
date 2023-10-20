@@ -1,7 +1,7 @@
 #include "jjuggumi.h"
 #include "canvas.h"
 
-#define DIALOG_DURATION_SEC		4
+
 
 void draw(void);
 void print_status(void);
@@ -109,15 +109,25 @@ void dialog(char message[]) {
 	int i, j;
 	int messageLength = strlen(message);
 
-	for (i = DIALOG_DURATION_SEC; i > 0; i--) {
+	for (int i = DIALOG_DURATION_SEC; i > 0; i--) {
 		gotoxy(4, 10);
-		printf("********************\n");
+
+		for (int j = 0; j < 20; j++) {
+			printf("*");
+		}
+		printf("\n");
+
 		gotoxy(5, 10);
 		printf("*       %d %s        *\n", i, message);
+
 		gotoxy(6, 10);
-		printf("********************");
+		for (int j = 0; j < 20; j++) {
+			printf("*");
+		}
+
 		Sleep(1000);
 	}
+
 
 	for (j = 0; j < 3; j++) {
 		for (i = 4; i <= 6; i++) {
