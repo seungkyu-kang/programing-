@@ -15,19 +15,25 @@ void nightgame_init() {
     map_init(FIELD_SIZE_Y, FIELD_SIZE_X);
 
     // 아이템 랜덤 배치
+    FILE* fp;
+    fopen_s(&fp, "C:\\Users\\asd\\Desktop\\programing--main\\jjuggumi.dat", "r");
     srand((unsigned int)time(NULL));
-    for (int i = 0; i < n_item; ++i) {
-        ITEM* tem = &item[i];
-        int x, y;
+    for (int i = 0; i < NUM_ITEM; ++i) {
+        fscanf_s(fp, "%s%d%d%d", item[i].name, (unsigned int)sizeof(item[i].name),
+            &item[i].intel_buf, &item[i].str_buf, &item[i].stamina_buf);
 
+        // 아이템 배치 로직
+        int x, y;
         do {
             x = randint(1, (FIELD_SIZE_Y - 2));
             y = randint(1, (FIELD_SIZE_X - 2));
         } while (back_buf[x][y] != ' ' || !placable(x, y));
-        back_buf[x][y] = 'I';
+        back_buf[x][y] = 'I'; // 아이템을 나타내는 문자
         itemX[i] = x;
         itemY[i] = y;
     }
+
+    fclose(fp); // 파일 닫기
 
     // 플레이어 배치 (0번 플레이어는 사용자로 설정)
     for (int i = 0; i < n_player; ++i) {
@@ -126,12 +132,12 @@ void playerItemInteraction(int px[PLAYER_MAX], int py[PLAYER_MAX], int itemX[ITE
 }
 
 // 플레이어들을 이동하는 함수
-void movePlayers(int px[PLAYER_MAX], int py[PLAYER_MAX], int itemX[ITEM_MAX], int itemY[ITEM_MAX], int userPlayer, int count) {
+void movePlayers(int px[PLAYER_MAX], int py[PLAYER_MAX], int itemX[ITEM_MAX], int itemY[ITEM_MAX], int userPlayer,int count) {
     if (count % 5 == 0) {
         for (int i = 1; i < PLAYER_MAX; ++i) {
             int minDistance = FIELD_SIZE_X + FIELD_SIZE_Y;
             int closestItemX, closestItemY;
-            for (int j = 0; j < n_item; ++j) {
+            for (int j = 0; j < ITEM_MAX; ++j) {
                 int distance = calculateDistance(px[i], py[i], itemX[j], itemY[j]);
                 if (distance < minDistance) {
                     minDistance = distance;
@@ -140,65 +146,38 @@ void movePlayers(int px[PLAYER_MAX], int py[PLAYER_MAX], int itemX[ITEM_MAX], in
                 }
             }
 
-            if (rand() % 2 == 0) {
-                if (px[i] != closestItemX) {
-                    if (px[i] < closestItemX && field[px[i] + 1][py[i]] == ' ') {
-                        field[px[i]][py[i]] = ' ';
-                        px[i]++;
-                        field[px[i]][py[i]] = '0' + i;
-                    }
-                    else if (px[i] > closestItemX && field[px[i] - 1][py[i]] == ' ') {
-                        field[px[i]][py[i]] = ' ';
-                        px[i]--;
-                        field[px[i]][py[i]] = '0' + i;
-                    }
+            int dx = closestItemX - px[i];
+            int dy = closestItemY - py[i];
+
+            // 가장 가까운 아이템 방향으로 이동
+            if (abs(dx) > abs(dy)) {
+                if (dx > 0 && back_buf[px[i] + 1][py[i]] == ' ') {
+                    back_buf[px[i]][py[i]] = ' ';
+                    px[i]++;
+                    back_buf[px[i]][py[i]] = '0' + i;
                 }
-                else if (py[i] != closestItemY) {
-                    if (py[i] < closestItemY && field[px[i]][py[i] + 1] == ' ') {
-                        field[px[i]][py[i]] = ' ';
-                        py[i]++;
-                        field[px[i]][py[i]] = '0' + i;
-                    }
-                    else if (py[i] > closestItemY && field[px[i]][py[i] - 1] == ' ') {
-                        field[px[i]][py[i]] = ' ';
-                        py[i]--;
-                        field[px[i]][py[i]] = '0' + i;
-                    }
+                else if (dx < 0 && back_buf[px[i] - 1][py[i]] == ' ') {
+                    back_buf[px[i]][py[i]] = ' ';
+                    px[i]--;
+                    back_buf[px[i]][py[i]] = '0' + i;
                 }
             }
-        }
-
-        // 플레이어 0의 이동 (자유롭게 이동)
-        if (userPlayer == 0) {
-            if (_kbhit()) {
-                int ch = _getch();
-                if (ch == 224) {
-                    ch = _getch();
-                    if (ch == 72 && field[px[userPlayer] - 1][py[userPlayer]] == ' ') {
-                        field[px[userPlayer]][py[userPlayer]] = ' ';
-                        px[userPlayer]--;
-                        field[px[userPlayer]][py[userPlayer]] = '0' + userPlayer;
-                    }
-                    else if (ch == 80 && field[px[userPlayer] + 1][py[userPlayer]] == ' ') {
-                        field[px[userPlayer]][py[userPlayer]] = ' ';
-                        px[userPlayer]++;
-                        field[px[userPlayer]][py[userPlayer]] = '0' + userPlayer;
-                    }
-                    else if (ch == 75 && field[px[userPlayer]][py[userPlayer] - 1] == ' ') {
-                        field[px[userPlayer]][py[userPlayer]] = ' ';
-                        py[userPlayer]--;
-                        field[px[userPlayer]][py[userPlayer]] = '0' + userPlayer;
-                    }
-                    else if (ch == 77 && field[px[userPlayer]][py[userPlayer] + 1] == ' ') {
-                        field[px[userPlayer]][py[userPlayer]] = ' ';
-                        py[userPlayer]++;
-                        field[px[userPlayer]][py[userPlayer]] = '0' + userPlayer;
-                    }
+            else {
+                if (dy > 0 && back_buf[px[i]][py[i] + 1] == ' ') {
+                    back_buf[px[i]][py[i]] = ' ';
+                    py[i]++;
+                    back_buf[px[i]][py[i]] = '0' + i;
+                }
+                else if (dy < 0 && back_buf[px[i]][py[i] - 1] == ' ') {
+                    back_buf[px[i]][py[i]] = ' ';
+                    py[i]--;
+                    back_buf[px[i]][py[i]] = '0' + i;
                 }
             }
         }
     }
 }
+
 
 void setCursorPosition(int x, int y) {
     COORD coord = { x, y };
@@ -234,16 +213,16 @@ void nightgame() {
             move_manual(key);
         }
 
-       // movePlayers(px, py, itemX, itemY, userPlayer, count);
-        //playerItemInteraction(field, playerX, playerY, itemX, itemY, userPlayer);
+        movePlayers(px, py, itemX, itemY, userPlayer, count);
+       // playerItemInteraction(field, px, py, itemX, itemY, userPlayer);
 
         // 필드 갱신
-        /*for (int i = 1; i < FIELD_SIZE_Y - 1; ++i) {
+        for (int i = 1; i < FIELD_SIZE_Y - 1; ++i) {
             for (int j = 1; j < FIELD_SIZE_X - 1; ++j) {
                 setCursorPosition(j, i);
                 printf("%c", field[i][j]);
             }
-        }*/
+        }
         
         count++;
         Sleep(50);
