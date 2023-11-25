@@ -14,10 +14,15 @@ int userPlayer = 0; // 사용자 플레이어 번호
 void nightgame_init() {
     map_init(FIELD_SIZE_Y, FIELD_SIZE_X);
 
-    // 아이템 랜덤 배치
-    srand((unsigned int)time(NULL));
+    // 파일에서 아이템 정보 읽어오기
+    FILE* fp;
+    fopen_s(&fp, "C:\\Users\\asd\\Desktop\\programing--main\\jjuggumi.dat", "r");
+
+    // 아이템 정보를 읽어와서 배치하는 작업 수행
     for (int i = 0; i < NUM_ITEM; ++i) {
-        ITEM* tem = &item[i];
+        fscanf_s(fp, "%s%d%d%d", item[i].name, (unsigned int)sizeof(item[i].name),
+            &item[i].intel_buf, &item[i].str_buf, &item[i].stamina_buf);
+
         // 아이템 배치 로직
         int x, y;
         do {
@@ -28,6 +33,8 @@ void nightgame_init() {
         itemX[i] = x;
         itemY[i] = y;
     }
+
+    fclose(fp); // 파일 닫기
 
     // 플레이어 배치 (0번 플레이어는 사용자로 설정)
     for (int i = 0; i < n_player; ++i) {
@@ -64,8 +71,8 @@ int calculateDistance(int x1, int y1, int x2, int y2) {
 
 //플레이어 수, 아이템 수 조정
 void playerItemInteraction(int PlayerNum) {
-    // 아이템이 있는지 확인하는 플래그-> PLAYER 구조체에 있음
-
+    // 아이템이 있는지 확인하는 플래그 -> PLAYER 구조체에 있음
+    int ignoredItem = -1;
     // 아이템 번호 확인
     for (int i = 0; i < n_item; i++) {
         PLAYER* p = &player[PlayerNum];
@@ -90,6 +97,7 @@ void playerItemInteraction(int PlayerNum) {
                     }
                     else {
                         printf("플레이어 0이 아이템을 무시합니다.\n");
+                        ignoredItem = i; // 무시한 아이템의 인덱스 저장
                     }
                 }
                 else {
@@ -104,6 +112,7 @@ void playerItemInteraction(int PlayerNum) {
                     }
                     else {
                         printf("플레이어 %d가 아이템을 무시합니다.\n", PlayerNum);
+                        ignoredItem = i; // 무시한 아이템의 인덱스 저장
                     }
                 }
             }
@@ -115,11 +124,57 @@ void playerItemInteraction(int PlayerNum) {
         //return p;
     }
 
-    
+    // 가장 가까운 아이템으로 이동
+    int closestItemIdx = -1;
+    int minDistance = FIELD_SIZE_X + FIELD_SIZE_Y; // 최대 거리로 초기화
+
+    for (int i = 0; i < n_item; ++i) {
+        if (i != ignoredItem) { // 무시한 아이템은 제외
+            int distance = calculateDistance(px[PlayerNum], py[PlayerNum], itemX[i], itemY[i]);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestItemIdx = i; // 가장 가까운 아이템의 인덱스 저장
+            }
+        }
+    }
+
+    // 가장 가까운 아이템이 있는 경우 해당 아이템으로 이동 (플레이어 0은 움직이지 않음)
+    if (PlayerNum != 0 && closestItemIdx != -1) {
+        int dx = itemX[closestItemIdx] - px[PlayerNum];
+        int dy = itemY[closestItemIdx] - py[PlayerNum];
+
+        // 가장 가까운 아이템 방향으로 이동
+        if (abs(dx) > abs(dy)) {
+            if (dx > 0 && back_buf[px[PlayerNum] + 1][py[PlayerNum]] == ' ') {
+                back_buf[px[PlayerNum]][py[PlayerNum]] = ' ';
+                px[PlayerNum]++;
+                back_buf[px[PlayerNum]][py[PlayerNum]] = '0' + PlayerNum;
+            }
+            else if (dx < 0 && back_buf[px[PlayerNum] - 1][py[PlayerNum]] == ' ') {
+                back_buf[px[PlayerNum]][py[PlayerNum]] = ' ';
+                px[PlayerNum]--;
+                back_buf[px[PlayerNum]][py[PlayerNum]] = '0' + PlayerNum;
+            }
+        }
+        else {
+            if (dy > 0 && back_buf[px[PlayerNum]][py[PlayerNum] + 1] == ' ') {
+                back_buf[px[PlayerNum]][py[PlayerNum]] = ' ';
+                py[PlayerNum]++;
+                back_buf[px[PlayerNum]][py[PlayerNum]] = '0' + PlayerNum;
+            }
+            else if (dy < 0 && back_buf[px[PlayerNum]][py[PlayerNum] - 1] == ' ') {
+                back_buf[px[PlayerNum]][py[PlayerNum]] = ' ';
+                py[PlayerNum]--;
+                back_buf[px[PlayerNum]][py[PlayerNum]] = '0' + PlayerNum;
+            }
+        }
+    }
 }
 
+
+
 // 플레이어들을 이동하는 함수
-void movePlayers(int userPlayer,int count) {
+void movePlayers(int userPlayer, int count) {
     if (count % 5 == 0) {
         for (int i = 1; i < n_player; i++) {
             int minDistance = FIELD_SIZE_X + FIELD_SIZE_Y;
@@ -183,7 +238,7 @@ void nightgame() {
 
     hideCursor(); // 커서 숨기기
     nightgame_init();
-    
+
     system("cls");
     display();
 
@@ -201,7 +256,7 @@ void nightgame() {
         }
 
         movePlayers(userPlayer, count);
-        
+
         for (int i = 0; i < n_player; i++) {
             PLAYER* p = &player[i];
 
@@ -215,15 +270,15 @@ void nightgame() {
         //        printf("%c", field[i][j]);
         //    }
         //}
-        
+
         count++;
         tick += 100;
-        Sleep(100);
+        Sleep(500);
 
         display();
 
-        
+
 
     }
-    
+
 }
